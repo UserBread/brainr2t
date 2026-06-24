@@ -11,16 +11,20 @@ class SubredditWebscraper:
         }
 
     def GetDailyLinks(self) -> dict[str, list[str]]:
-        for subreddit in self.links.keys():
-            res = requests.get(f'https://old.reddit.com/r/{subreddit}/', headers=self.headers)
-            soup = BeautifulSoup(res.text, 'html.parser')
+        try:
+            for subreddit in self.links.keys():
+                res = requests.get(f'https://old.reddit.com/r/{subreddit}/', headers=self.headers)
+                soup = BeautifulSoup(res.text, 'html.parser')
 
-            for i in soup.find_all('a'):
-                if i.has_attr('class'):
-                    if i['class'] == ['title', 'may-blank']:
-                        self.links[subreddit].append(f'https://old.reddit.com{i['href']}')
-
-        return self.links
+                for i in soup.find_all('a'):
+                    if i.has_attr('class'):
+                        if i['class'] == ['title', 'may-blank']:
+                            self.links[subreddit].append(f'https://old.reddit.com{i['href']}')
+            return self.links
+        
+        except Exception as e:
+            print(f"Error occurred while fetching daily links: {e}")
+            return self.links
     
     def GetPostText(self, link: str) -> str:
         try:
