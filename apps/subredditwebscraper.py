@@ -21,6 +21,16 @@ class SubredditWebscraper:
                         self.links[subreddit].append(f'https://old.reddit.com{i['href']}')
 
         return self.links
+    
+    def GetPostText(self, link: str) -> str:
+        try:
+            res = requests.get(link, headers=self.headers)
+            soup = BeautifulSoup(res.text, 'html.parser')
+            body = soup.select_one('.entry.unvoted .usertext-body.may-blank-within.md-container')
+            return body.get_text() if body else ""
+        except Exception as e:
+            print(f"Error occurred while fetching post text for link {link}: {e}")
+            return ""
 
 if __name__ == '__main__':
     srws = SubredditWebscraper()
@@ -30,3 +40,5 @@ if __name__ == '__main__':
         print(f'r/{k}', "------------------")
         for link in v:
             print(link)
+            text = srws.GetPostText(link)
+            print(text)
