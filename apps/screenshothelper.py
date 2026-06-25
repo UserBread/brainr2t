@@ -24,5 +24,3 @@ if __name__ == '__main__':
             os.remove(f"test{i}.png")
         pyautogui.press('pagedown')
         time.sleep(0.5)
-
-90047056
