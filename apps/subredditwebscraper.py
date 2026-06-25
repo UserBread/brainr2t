@@ -1,5 +1,6 @@
 import requests
 import json
+import os 
 
 from bs4 import BeautifulSoup
 
@@ -22,6 +23,10 @@ def GetPostStats(soup: BeautifulSoup, link: str) -> None:
     except Exception as e:
         print(f"Error occurred while fetching post stats: {e}")
 
+def jsonCheck() -> None:
+    if not os.path.exists('stats.json'):
+        with open('stats.json', 'w') as f:
+            json.dump({}, f, indent=4)
 
 class SubredditWebscraper:
     def __init__(self):
@@ -52,6 +57,7 @@ class SubredditWebscraper:
             res = requests.get(link, headers=self.headers)
             soup = BeautifulSoup(res.text, 'html.parser')
             body = soup.select_one('.entry.unvoted .usertext-body.may-blank-within.md-container')
+            jsonCheck()
             GetPostStats(soup, link)
             return body.get_text() if body else ""
         except Exception as e:
