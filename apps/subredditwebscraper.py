@@ -1,5 +1,27 @@
 import requests
+import json
+
 from bs4 import BeautifulSoup
+
+
+def GetPostStats(soup: BeautifulSoup, link: str) -> None:
+    try:
+        likes = soup.select_one('.score.likes').get_text().split(' ')[0]
+        if likes == "•": likes = 0
+        comments = soup.select_one('.bylink.comments.may-blank').get_text().split(' ')[0]
+        if comments == "comment": comments = 0
+
+        with open('stats.json', 'r') as f:
+            stats = json.load(f)
+
+        stats[link] = {
+            "comments": int(comments),
+            "likes": int(likes)
+        }
+        json.dump(stats, open('stats.json', 'w'), indent=4)
+    except Exception as e:
+        print(f"Error occurred while fetching post stats: {e}")
+
 
 class SubredditWebscraper:
     def __init__(self):
@@ -21,20 +43,21 @@ class SubredditWebscraper:
                         if i['class'] == ['title', 'may-blank']:
                             self.links[subreddit].append(f'https://old.reddit.com{i['href']}')
             return self.links
-        
         except Exception as e:
             print(f"Error occurred while fetching daily links: {e}")
             return self.links
-    
+
     def GetPostText(self, link: str) -> str:
         try:
             res = requests.get(link, headers=self.headers)
             soup = BeautifulSoup(res.text, 'html.parser')
             body = soup.select_one('.entry.unvoted .usertext-body.may-blank-within.md-container')
+            GetPostStats(soup, link)
             return body.get_text() if body else ""
         except Exception as e:
             print(f"Error occurred while fetching post text for link {link}: {e}")
             return ""
+
 
 if __name__ == '__main__':
     srws = SubredditWebscraper()
@@ -42,7 +65,7 @@ if __name__ == '__main__':
 
     for k, v in srws.links.items():
         print(f'r/{k}', "------------------")
-        for link in v:
-            print(link)
-            text = srws.GetPostText(link)
-            print(text)
+        for l in v:
+            print(l)
+            text = srws.GetPostText(l)
+            #print(text)
